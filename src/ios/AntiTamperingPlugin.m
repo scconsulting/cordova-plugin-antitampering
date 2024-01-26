@@ -1,3 +1,8 @@
+#include <assert.h>
+#include <stdbool.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/sysctl.h>
 #import "AntiTamperingPlugin.h"
 
 @implementation AntiTamperingPlugin
@@ -34,10 +39,6 @@
 }
 
 -(void)debugDetection{
-    #ifdef DEBUG
-        @throw([NSException exceptionWithName:@"DebugDetectedException" reason:@"App running in Debug mode" userInfo:nil]);
-    #endif
-
     int junk;
     int mib[4];
     struct kinfo_proc info;
@@ -56,8 +57,12 @@
     // We're being debugged if the P_TRACED flag is set.
     if ((info.kp_proc.p_flag & P_TRACED) != 0) {
         // A debugger was detected. Exit. exit(0);
-        @throw([NSException exceptionWithName:@"DebugDetectedException" reason:@"App running in Debug mode" userInfo:nil]);
+        @throw([NSException exceptionWithName:@"DebugDetectedException" reason:@"App is running in Debug mode" userInfo:nil]);
     }
+
+    #ifdef DEBUG
+        @throw([NSException exceptionWithName:@"DebugDetectedException" reason:@"App running in Debug mode" userInfo:nil]);
+    #endif
 }
 
 -(void)checkAndStopExecution{
@@ -66,6 +71,7 @@
         [self checkAssetsIntegrity];
     } @catch (NSException *exception) {
         NSLog(@"Anti-Tampering check failed! %@: %@", [exception name], [exception reason]);
+        exit(0);
         int *x = NULL; *x = 7;
     }
 }
