@@ -7,7 +7,7 @@
     <description>Verify the integrity of cordova static assets - Android / iOS</description>
     <author>Davide Doronzo</author>
     <license>MIT</license>
-    <repo>https://github.com/duddu/cordova-plugin-antitampering</repo>
+    <repo>https://github.com/dynamifylimited/cordova-plugin-antitampering</repo>
 
     <engines>
         <engine name="cordova" version=">=5.4" />

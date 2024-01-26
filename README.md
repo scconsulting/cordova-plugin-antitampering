@@ -1,10 +1,6 @@
 Anti-Tampering Cordova Plugin
 =============================
 
-[![npm](https://img.shields.io/npm/v/cordova-plugin-antitampering.svg)](https://www.npmjs.com/package/cordova-plugin-antitampering)
-[![Travis branch](https://img.shields.io/travis/duddu/cordova-plugin-antitampering/master.svg)](https://travis-ci.org/duddu/cordova-plugin-antitampering)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/596be7addc734ba9979e66713d237052)](https://www.codacy.com/app/duddu/cordova-plugin-antitampering?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=duddu/cordova-plugin-antitampering&amp;utm_campaign=Badge_Grade)
-
 This plugin verifies the **integrity of the static assets** of your Cordova application, checking if the files have changed since the original build.  
 Before the compile phase, it creates a hash (SHA-256) for each file found under the `www` directory of your platforms; then, every time the app is launched, it compares those hashes with ones created at run-time from the actual assets loaded.  
 The plugin also provides optional **debug detection**, to prevent your App from running in debug mode.  
@@ -13,13 +9,9 @@ Supports Android and iOS.
 
 ## Installation
 
-Install latest release from npm:
-
-    cordova plugin add cordova-plugin-antitampering
-
 Install latest commit from branch develop:
 
-    cordova plugin add https://github.com/duddu/cordova-plugin-antitampering#develop
+    cordova plugin add https://github.com/dynamifylimited/cordova-plugin-antitampering#develop
 
 ## Usage
 

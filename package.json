@@ -5,7 +5,7 @@
   "author": "duddu",
   "repository": {
     "type": "git",
-    "url": "https://github.com/duddu/cordova-plugin-antitampering"
+    "url": "https://github.com/dynamifylimited/cordova-plugin-antitampering"
   },
   "cordova": {
     "id": "cordova-plugin-antitampering",
