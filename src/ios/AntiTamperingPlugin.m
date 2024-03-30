@@ -60,6 +60,11 @@
         @throw([NSException exceptionWithName:@"DebugDetectedException" reason:@"App is running in Debug mode" userInfo:nil]);
     }
 
+    NSString *fridaPath = @"/usr/bin/frida-server";
+    if ([[NSFileManager defaultManager] fileExistsAtPath:fridaPath]) {
+        @throw([NSException exceptionWithName:@"FridaDetectedException" reason:@"Frida detected on the device" userInfo:nil]);
+    }
+
     #ifdef DEBUG
         @throw([NSException exceptionWithName:@"DebugDetectedException" reason:@"App running in Debug mode" userInfo:nil]);
     #endif
@@ -71,8 +76,6 @@
         [self checkAssetsIntegrity];
     } @catch (NSException *exception) {
         NSLog(@"Anti-Tampering check failed! %@: %@", [exception name], [exception reason]);
-        exit(0);
-        int *x = NULL; *x = 7;
     }
 }
 
