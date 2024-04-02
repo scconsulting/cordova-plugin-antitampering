@@ -7,6 +7,7 @@ import android.os.Debug;
 
 import java.lang.reflect.Field;
 import java.util.List;
+import java.io.File;
 
 class DebugDetection {
     public static void check(String packageName, Context context) throws Exception {
@@ -19,7 +20,7 @@ class DebugDetection {
         if (getDebugField(packageName)) {
             throw new Exception("App running in Debug mode");
         }
-        if (isFridaPresent(context)) {
+        if (isFridaPresent(context) || isFridaLibraryPresent() || isFridaRelatedFilesPresent()) {
             throw new Exception("Frida is present");
         }
     }
@@ -46,6 +47,33 @@ class DebugDetection {
             e.printStackTrace();
             return true;
         }
+    }
+
+    private static boolean isFridaLibraryPresent() {
+        try {
+            System.loadLibrary("frida-gadget");
+            return true;
+        } catch (UnsatisfiedLinkError e) {
+            return false;
+        }
+    }
+
+    private static boolean isFridaRelatedFilesPresent() {
+        String[] fridaRelatedPaths = {
+                "/data/local/tmp/frida-server",
+                "/data/local/tmp/frida",
+                "/system/bin/frida-server",
+                "/system/bin/frida",
+                "/data/data/com.termux/files/home/.frida-server",
+                "/data/data/com.termux/files/home/.frida",
+        };
+        for (String path : fridaRelatedPaths) {
+            File file = new File(path);
+            if (file.exists()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean isFridaPresent(Context context) {

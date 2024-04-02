@@ -27,12 +27,7 @@ public class AntiTamperingPlugin extends CordovaPlugin {
             AssetsIntegrity.check(activity.getAssets());
             DebugDetection.check(activity.getPackageName(), activity.getApplicationContext());
         } catch (final Exception e) {
-            cordova.getActivity().runOnUiThread(new Runnable() {
-                public void run () {
-                    e.printStackTrace();
-                    throw new TamperingException("Anti-Tampering check failed");
-                }
-            });
+            activity.finish();
         }
     }
 
