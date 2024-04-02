@@ -17,18 +17,9 @@ class DebugDetection {
         if (hasDebuggerAttached()) {
             throw new Exception("Debugger attached");
         }
-        if (getDebugField(packageName)) {
-            throw new Exception("App running in Debug mode");
-        }
         if (isFridaPresent(context) || isFridaLibraryPresent() || isFridaRelatedFilesPresent()) {
             throw new Exception("Frida is present");
         }
-    }
-
-    private static Boolean getDebugField(String packageName) throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
-        Class<?> buildConfigClass = Class.forName(packageName.concat(".BuildConfig"));
-        Field debugField = buildConfigClass.getField("DEBUG");
-        return debugField.getBoolean(null);
     }
 
     private static Boolean hasDebuggerAttached() {
