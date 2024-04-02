@@ -60,9 +60,20 @@
         @throw([NSException exceptionWithName:@"DebugDetectedException" reason:@"App is running in Debug mode" userInfo:nil]);
     }
 
-    NSString *fridaPath = @"/usr/bin/frida-server";
-    if ([[NSFileManager defaultManager] fileExistsAtPath:fridaPath]) {
-        @throw([NSException exceptionWithName:@"FridaDetectedException" reason:@"Frida detected on the device" userInfo:nil]);
+    NSArray *fridaServerPaths = @[
+        @"/usr/sbin/frida-server", 
+        @"/usr/bin/frida-server",
+        @"/usr/local/bin/frida-server",
+        @"/bin/frida-server",
+        @"/private/var/tmp/frida-server",  
+        @"/private/tmp/frida-server"
+    ];
+
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    for (NSString *path in fridaServerPaths) {
+        if ([fileManager fileExistsAtPath:path]) {
+            @throw([NSException exceptionWithName:@"FridaDetectedException" reason:@"Frida detected on the device" userInfo:nil]);
+        }
     }
 
     #ifdef DEBUG
