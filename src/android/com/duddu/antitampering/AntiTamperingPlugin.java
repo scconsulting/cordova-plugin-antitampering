@@ -18,17 +18,7 @@ public class AntiTamperingPlugin extends CordovaPlugin {
 
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
         activity = cordova.getActivity();
-        checkAndStopExecution();
         super.initialize(cordova, webView);
-    }
-
-    private void checkAndStopExecution() {
-        try {
-            AssetsIntegrity.check(activity.getAssets());
-            DebugDetection.check(activity.getPackageName(), activity.getApplicationContext());
-        } catch (final Exception e) {
-            activity.finish();
-        }
     }
 
     public boolean execute(String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {
