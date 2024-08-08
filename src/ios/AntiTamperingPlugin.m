@@ -9,7 +9,6 @@
 
 - (void)pluginInitialize{
     self.assetsHashes = @{};
-    [self checkAndStopExecution];
 }
 
 -(void)checkAssetsIntegrity{
@@ -79,15 +78,6 @@
     #ifdef DEBUG
         @throw([NSException exceptionWithName:@"DebugDetectedException" reason:@"App running in Debug mode" userInfo:nil]);
     #endif
-}
-
--(void)checkAndStopExecution{
-    @try {
-        [self debugDetection];
-        [self checkAssetsIntegrity];
-    } @catch (NSException *exception) {
-        NSLog(@"Anti-Tampering check failed! %@: %@", [exception name], [exception reason]);
-    }
 }
 
 -(void)verify:(CDVInvokedUrlCommand*)command{
