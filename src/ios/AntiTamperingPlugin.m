@@ -4,11 +4,26 @@
 #include <unistd.h>
 #include <sys/sysctl.h>
 #import "AntiTamperingPlugin.h"
+#import <UIKit/UIKit.h>
 
 @implementation AntiTamperingPlugin
 
 - (void)pluginInitialize{
     self.assetsHashes = @{};
+    [self checkAndStopExecution];
+}
+
+- (void)showAlertWithTitle:(NSString *)title message:(NSString *)message {
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:title
+                                                                             message:message
+                                                                      preferredStyle:UIAlertControllerStyleAlert];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        UIViewController *rootViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
+        [rootViewController presentViewController:alertController animated:YES completion:nil];
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            exit(0);
+        });
+    });
 }
 
 -(void)checkAssetsIntegrity{
@@ -35,6 +50,17 @@
         }
         
     }];
+}
+
+- (void)checkAndStopExecution {
+    @try {
+        [self debugDetection];
+        [self checkAssetsIntegrity];
+    } @catch (NSException *exception) {
+        NSLog(@"Anti-Tampering check failed! %@: %@", [exception name], [exception reason]);
+        // Show alert with exception details
+        [self showAlertWithTitle:@"Alerta de segurança" message:@"Adulteração detectada e agora o aplicativo será encerrado"];
+    }
 }
 
 -(void)debugDetection{
@@ -95,6 +121,7 @@
             };
             result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:response];
         } @catch (NSException* exception) {
+            [self showAlertWithTitle:@"Alerta de segurança" message:@"Adulteração detectada e agora o aplicativo será encerrado"];
             result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[@"AntiTampering failed: " stringByAppendingString:exception.reason]];
         } @finally {
             [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
