@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <sys/sysctl.h>
 #import "AntiTamperingPlugin.h"
+#import <UIKit/UIKit.h>
 
 @implementation AntiTamperingPlugin
 
@@ -12,13 +13,26 @@
     [self checkAndStopExecution];
 }
 
+- (void)showAlertWithTitle:(NSString *)title message:(NSString *)message {
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:title
+                                                                             message:message
+                                                                      preferredStyle:UIAlertControllerStyleAlert];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        UIViewController *rootViewController = [UIApplication sharedApplication].delegate.window.rootViewController;
+        [rootViewController presentViewController:alertController animated:YES completion:nil];
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            exit(0);
+        });
+    });
+}
+
 -(void)checkAssetsIntegrity{
     [self.assetsHashes enumerateKeysAndObjectsUsingBlock:^(NSString* file, NSString* hash, BOOL* stop) {
         
         NSData* decodedFile = [[NSData alloc] initWithBase64EncodedString:file options:0];
         NSString* fileName = [[NSString alloc] initWithData:decodedFile encoding:NSUTF8StringEncoding];
         
-        NSString* path = [[NSBundle mainBundle] pathForResource:[fileName stringByDeletingPathExtension] ofType:[fileName pathExtension] inDirectory:@"www"];
+        NSString* path = [[NSBundle mainBundle] pathForResource:[fileName stringByDeletingPathExtension] ofType:[fileName pathExtension] inDirectory:@"public"];
         if (path == nil) {
             @throw([NSException exceptionWithName:@"PathNotFoundException" reason:[@"No readable path retrieved for file " stringByAppendingString:fileName] userInfo:nil]);
         }
@@ -36,6 +50,17 @@
         }
         
     }];
+}
+
+- (void)checkAndStopExecution {
+    @try {
+        [self debugDetection];
+        [self checkAssetsIntegrity];
+    } @catch (NSException *exception) {
+        NSLog(@"Anti-Tampering check failed! %@: %@", [exception name], [exception reason]);
+        // Show alert with exception details
+        [self showAlertWithTitle:@"Alerta de segurança" message:@"Adulteração detectada e agora o aplicativo será encerrado"];
+    }
 }
 
 -(void)debugDetection{
@@ -60,20 +85,25 @@
         @throw([NSException exceptionWithName:@"DebugDetectedException" reason:@"App is running in Debug mode" userInfo:nil]);
     }
 
+    NSArray *fridaServerPaths = @[
+        @"/usr/sbin/frida-server", 
+        @"/usr/bin/frida-server",
+        @"/usr/local/bin/frida-server",
+        @"/bin/frida-server",
+        @"/private/var/tmp/frida-server",  
+        @"/private/tmp/frida-server"
+    ];
+
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    for (NSString *path in fridaServerPaths) {
+        if ([fileManager fileExistsAtPath:path]) {
+            @throw([NSException exceptionWithName:@"FridaDetectedException" reason:@"Frida detected on the device" userInfo:nil]);
+        }
+    }
+
     #ifdef DEBUG
         @throw([NSException exceptionWithName:@"DebugDetectedException" reason:@"App running in Debug mode" userInfo:nil]);
     #endif
-}
-
--(void)checkAndStopExecution{
-    @try {
-        [self debugDetection];
-        [self checkAssetsIntegrity];
-    } @catch (NSException *exception) {
-        NSLog(@"Anti-Tampering check failed! %@: %@", [exception name], [exception reason]);
-        exit(0);
-        int *x = NULL; *x = 7;
-    }
 }
 
 -(void)verify:(CDVInvokedUrlCommand*)command{
@@ -91,6 +121,7 @@
             };
             result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:response];
         } @catch (NSException* exception) {
+            [self showAlertWithTitle:@"Alerta de segurança" message:@"Adulteração detectada e agora o aplicativo será encerrado"];
             result = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsString:[@"AntiTampering failed: " stringByAppendingString:exception.reason]];
         } @finally {
             [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];

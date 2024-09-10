@@ -19,7 +19,7 @@ import java.util.Map;
 class AssetsIntegrity {
 
     private static final String MESSAGE_DIGEST_ALGORITHM = "SHA-256";
-    private static final String ASSETS_BASE_PATH = "www/";
+    private static final String ASSETS_BASE_PATH = "public/";
 
     private static final Map<String, String> assetsHashes = Collections.unmodifiableMap(
         new HashMap<String, String>()
